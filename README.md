@@ -1,0 +1,1 @@
+# Nordstrom authentication middleware
