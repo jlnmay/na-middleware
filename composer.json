@@ -10,8 +10,16 @@
         }
     ],
     "type": "project",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/jlnmay/persistent-storage"
+        }
+    ],
     "require": {
-		"php": ">=5.4"
+        "php": ">=5.4",
+        "jlnmay/persistent-storage": "dev-master"
+        
     },
 	"require-dev": {
 		"phpunit/phpunit": "5.2.*"
