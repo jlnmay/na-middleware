@@ -3,6 +3,7 @@
     "description": "Nordstrom authentication middleware",
     "keywords": ["nordstrom", "authentication", "middleware"],
     "license": "MIT",
+    "minimum-stability": "dev",
     "authors": [
         {
             "name": "Julián May",
