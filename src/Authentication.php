@@ -70,7 +70,7 @@ class Authentication
         $permissions = [getenv("NA_ACCESS")];
         
         // Verifying is the user has the correct permissions
-        $position = array_search($get, $permissions);
+        $position = array_search($naAccess, $permissions);
 
         /// GET applies for all endpoints 
         if ($position === false) {
