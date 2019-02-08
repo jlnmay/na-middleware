@@ -24,11 +24,7 @@ class Authentication
         if ($request->hasHeader("nauth-sso")) {
             $token = $request->getHeader("nauth-sso")[0];
             $memcached = PsMemcached::getInstance();
-            $uid = $memcached->has(array("key" => md5("token_" . $token)));
-            
-            if ($uid != false) {
-                $uid = $uid["uid"];
-            }
+            $uid = $this->getUid($token);
             
             $expirationDate = $memcached->has(array("key" => "mdadDateExpiration_" . $uid));
             
@@ -41,6 +37,7 @@ class Authentication
             // We check if the expiration date exists or if the current date is higher than expiration date (expired token)
             if (!$expirationDate || ($currentDate > $expirationDate)) {
                 $this->validateToken($token);
+                $uid = $this->getUid($token);
                 $this->validatePermissions($uid);
             } else {
                 $this->validatePermissions($uid);
@@ -53,6 +50,21 @@ class Authentication
          
         $response = $next($request, $response);
         return $response;
+    }
+
+    /**
+     * Gets the uid
+     */
+    private function getUid($token)
+    {
+        $memcached = PsMemcached::getInstance();
+        $uid = $memcached->has(array("key" => md5("token_" . $token)));
+            
+        if ($uid != false) {
+            $uid = $uid["uid"];
+        }
+
+        return $uid; 
     }
 
     /**
@@ -138,7 +150,6 @@ class Authentication
                     $groups = $data["groups"];
                     $position = array_search(getenv("NA_ACCESS"), $groups);
                     
-                    // Read for everything (All GET endpoints)
                     if ($position > 0) {
                         $memcached->save(
                             array("key" => "NA_ACCESS_" . $uid, 
