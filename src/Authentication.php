@@ -61,13 +61,13 @@ class Authentication
     private function validatePermissions($uid)
     {
         $memcached = PsMemcached::getInstance();
-        $get = $memcached->has(array(
-            "key" => "GET_" . $uid 
+        $naAccess = $memcached->has(array(
+            "key" => "NA_ACCESS_" . $uid 
         ));
 
-        $get = $get["GET"];
+        $naAccess = $naAccess["NA_ACCESS"];
 
-        $permissions = [getenv("NA_AUTH_ACCESS")];
+        $permissions = [getenv("NA_ACCESS")];
         
         // Verifying is the user has the correct permissions
         $position = array_search($get, $permissions);
@@ -136,15 +136,15 @@ class Authentication
                 
                 if (isset($data["groups"])) {
                     $groups = $data["groups"];
-                    $position = array_search(getenv("NA_AUTH_ACCESS"), $groups);
+                    $position = array_search(getenv("NA_ACCESS_"), $groups);
                     
                     // Read for everything (All GET endpoints)
                     if ($position > 0) {
                         $memcached->save(
-                            array("key" => "GET_" . $uid, 
+                            array("key" => "NA_ACCESS_" . $uid, 
                                 "store" => array(
-                                    "GET" => 
-                                    getenv("NA_AUTH_ACCESS")
+                                    "NA_ACCESS" => 
+                                    getenv("NA_ACCESS")
                                 )
                             )
                         );
