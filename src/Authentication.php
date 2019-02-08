@@ -136,7 +136,7 @@ class Authentication
                 
                 if (isset($data["groups"])) {
                     $groups = $data["groups"];
-                    $position = array_search(getenv("NA_ACCESS_"), $groups);
+                    $position = array_search(getenv("NA_ACCESS"), $groups);
                     
                     // Read for everything (All GET endpoints)
                     if ($position > 0) {
