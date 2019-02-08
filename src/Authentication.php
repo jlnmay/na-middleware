@@ -67,7 +67,7 @@ class Authentication
 
         $get = $get["GET"];
 
-        $permissions = [getenv("NA_MDAD_ACCESS_GET")];
+        $permissions = [getenv("NA_AUTH_ACCESS")];
         
         // Verifying is the user has the correct permissions
         $position = array_search($get, $permissions);
@@ -136,7 +136,7 @@ class Authentication
                 
                 if (isset($data["groups"])) {
                     $groups = $data["groups"];
-                    $position = array_search(getenv("NA_MDAD_ACCESS_GET"), $groups);
+                    $position = array_search(getenv("NA_AUTH_ACCESS"), $groups);
                     
                     // Read for everything (All GET endpoints)
                     if ($position > 0) {
@@ -144,7 +144,7 @@ class Authentication
                             array("key" => "GET_" . $uid, 
                                 "store" => array(
                                     "GET" => 
-                                    getenv("NA_MDAD_ACCESS_GET")
+                                    getenv("NA_AUTH_ACCESS")
                                 )
                             )
                         );
