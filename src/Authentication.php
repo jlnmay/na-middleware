@@ -23,24 +23,28 @@ class Authentication
     {
         if ($request->hasHeader("nauth-sso")) {
             $token = $request->getHeader("nauth-sso")[0];
-            $memcached = PsMemcached::getInstance();
-            $uid = $this->getUid($token);
             
-            $expirationDate = $memcached->has(array("key" => "mdadDateExpiration_" . $uid));
-            
-            if ($expirationDate != false) {
-                $expirationDate = $expirationDate["mdadDateExpiration"];
-            }
-
-            $currentDate = date("Y-m-d H:i:s A", time());
-            
-            // We check if the expiration date exists or if the current date is higher than expiration date (expired token)
-            if (!$expirationDate || ($currentDate > $expirationDate)) {
-                $this->validateToken($token);
+            // Validating if the nauth-sso value match with nauth token bypass
+            if ($token != getenv("NAUTH_BYPASS_TOKEN")) {
+                $memcached = PsMemcached::getInstance();
                 $uid = $this->getUid($token);
-                $this->validatePermissions($uid);
-            } else {
-                $this->validatePermissions($uid);
+                
+                $expirationDate = $memcached->has(array("key" => "mdadDateExpiration_" . $uid));
+                
+                if ($expirationDate != false) {
+                    $expirationDate = $expirationDate["mdadDateExpiration"];
+                }
+
+                $currentDate = date("Y-m-d H:i:s A", time());
+                
+                // We check if the expiration date exists or if the current date is higher than expiration date (expired token)
+                if (!$expirationDate || ($currentDate > $expirationDate)) {
+                    $this->validateToken($token);
+                    $uid = $this->getUid($token);
+                    $this->validatePermissions($uid);
+                } else {
+                    $this->validatePermissions($uid);
+                }
             }
         } else {
             // Missing token
