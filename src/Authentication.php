@@ -116,7 +116,7 @@ class Authentication
     private function validateToken($token) 
     {
         $nauth = new NAuth(getenv("NA_CLIENT_ID"), getenv("NA_CLIENT_SECRET"), getenv("NA_REDIRECT_URI"), getenv("NA_ENV"));
-        $authResponse =  $nauth->introspect(getenv("NA_ENV"), $token);
+        $authResponse =  $nauth->introspect($token);
 
         $authResponseArray = json_decode($authResponse, true);
         $data = $authResponseArray["data"];
