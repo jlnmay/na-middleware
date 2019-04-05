@@ -38,7 +38,13 @@ class Authentication
                 $currentDate = date("Y-m-d H:i:s A", time());
                 
                 // We check if the expiration date exists or if the current date is higher than expiration date (expired token)
-                if (!$expirationDate || ($currentDate > $expirationDate)) {
+                if ($currentDate > $expirationDate) {
+                    // Invalid token
+                    $error = $this->buildErrorObject(401, "Authentication failed, due to missing or invalid credentials.");
+                    throw new JsonException(json_encode($error), 401);
+                }
+
+                if (!$expirationDate) {
                     $this->validateToken($token);
                     $uid = $this->getUid($token);
                     $this->validatePermissions($uid);
@@ -135,7 +141,7 @@ class Authentication
                 
                 $memcached->clear(array("key" => $token));
                 $memcached->clear(array("key" => "originalDateExpiration_" . $uid));
-                $memcached->clear(array("key" => "mdadDateExpiration_") . $uid);
+                $memcached->clear(array("key" => "mdadDateExpiration_" . $uid));
                 $memcached->clear(array("key" => "GET_" . $uid));
                 
                 $memcached->save(array("key" => 'originalDateExpiration_' . $uid, 
