@@ -10,6 +10,13 @@ use Api\handlers\JsonException;
 
 class Authentication
 {
+    private $oauth2Server; 
+
+    public function __construct($oauth2Server)
+    {
+        $this->oauth2Server = $oauth2Server; 
+    }
+
     /**
      * Middleware invokable class
      *
@@ -38,7 +45,7 @@ class Authentication
                 $currentDate = date("Y-m-d H:i:s A", time());
                 
                 // We check if the expiration date exists or if the current date is higher than expiration date (expired token)
-                if ($currentDate > $expirationDate) {
+                if (gettype($expirationDate) === "string" && $currentDate > $expirationDate) {
                     // Invalid token
                     $error = $this->buildErrorObject(401, "Authentication failed, due to missing or invalid credentials.");
                     throw new JsonException(json_encode($error), 401);
@@ -53,9 +60,26 @@ class Authentication
                 }
             }
         } else {
-            // Missing token
-            $error = $this->buildErrorObject(401, "Authentication failed, due to missing or invalid credentials.");
-            throw new JsonException(json_encode($error), 401);
+            // We check if Auhotization header or query string parameter is present 
+            $params = $request->getQueryParams();
+            $authorization = false; 
+            foreach ($params as $key => $param) {
+                if (strtolower($key) == "authorization") {
+                    $authorization = true; 
+                    $_GET["access_token"] = $param;
+                    break; 
+                }
+            }
+            
+            if ($request->hasHeader("Authorization") || $authorization) {
+                if (!$this->oauth2Server->verifyResourceRequest(\OAuth2\Request::createFromGlobals())) {
+                    $error = $this->buildErrorObject(401, "Authentication failed, due to missing or invalid credentials.");
+                    throw new JsonException(json_encode($error), 401);
+                } 
+            } else {
+                $error = $this->buildErrorObject(401, "Authentication failed, due to missing or invalid credentials.");
+                throw new JsonException(json_encode($error), 401);
+            }
         }
          
         $response = $next($request, $response);
@@ -133,7 +157,7 @@ class Authentication
             if ($active || $active == 1) {
                 $originalDateExpiration = date("Y-m-d H:i:s A", $data["exp"]);
                 $mdadDateExpiration = date("Y-m-d H:i:s", time());
-                $mdadDateExpiration = date("Y-m-d H:i:s A", strtotime($mdadDateExpiration . ' +' . getenv("NA_TOKEN_LIVE") . ' hours'));
+                $mdadDateExpiration = date("Y-m-d H:i:s A", strtotime($mdadDateExpiration . ' +' . getenv("NA_TOKEN_LIVE")));
                 $uid = $data["uid"];
                 $memcached = PsMemcached::getInstance();
                 
@@ -153,7 +177,7 @@ class Authentication
                     "store" => array("mdadDateExpiration" => $mdadDateExpiration)
                 ));
                 
-                $userResponse = json_decode($nauth->getUserInfo(getenv("NA_ENV"), $token), true);
+                $userResponse = json_decode($nauth->getUserInfo($token), true);
                 $data = $userResponse["data"];
                 
                 if (isset($data["groups"])) {
