@@ -1,7 +1,7 @@
 {
-    "name": "jlnmay/slim-na-middleware",
-    "description": "Slim 3 nordstrom authentication middleware",
-    "keywords": ["slim3", "nordstrom", "authentication", "middleware"],
+    "name": "jlnmay/na-middleware",
+    "description": "Nordstrom authentication middleware",
+    "keywords": ["nordstrom", "authentication", "middleware"],
     "license": "MIT",
     "authors": [
         {
@@ -19,7 +19,7 @@
     },
 	"autoload": {
         "psr-4": {
-            "JlnMay\\Slim\\Na\\Middleware\\": "src/"
+            "JlnMay\\NaMiddleware\\": "src/"
         }
     },
     "autoload-dev": {
