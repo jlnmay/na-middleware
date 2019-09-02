@@ -1,9 +1,8 @@
 {
-    "name": "jlnmay/na-middleware",
-    "description": "Nordstrom authentication middleware",
-    "keywords": ["nordstrom", "authentication", "middleware"],
+    "name": "jlnmay/slim-na-middleware",
+    "description": "Slim 3 nordstrom authentication middleware",
+    "keywords": ["slim3", "nordstrom", "authentication", "middleware"],
     "license": "MIT",
-    "minimum-stability": "dev",
     "authors": [
         {
             "name": "Julián May",
@@ -12,14 +11,20 @@
     ],
     "type": "project",
     "require": {
-        "php": ">=5.4"
+        "php": ">=5.4",
+        "psr/http-message": "^1.0"
     },
 	"require-dev": {
-		"phpunit/phpunit": "5.2.*"
+		"phpunit/phpunit": ">=4.8 < 6.0"
     },
 	"autoload": {
         "psr-4": {
-            "JlnMay\\NaMiddleware\\": "src/"
+            "JlnMay\\Slim\\Na\\Middleware\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
         }
     }
 }

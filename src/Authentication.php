@@ -28,6 +28,13 @@ class Authentication
      */
     public function __invoke(Request $request, Response $response, $next)
     {
+        // If allowInternalReadOperations attribute is present, that means that the incoming ips were validated, if the attribute 
+        //  is set to true, we don't need to authenticate the incoming request at all 
+        // This attribute is set in RestrictRoute middleware 
+        if ($request->getAttribute("allowInternalReadOperations") != null && $request->getAttribute("allowInternalReadOperations")) {
+            return $next($request, $response); 
+        }
+
         if ($request->hasHeader("nauth-sso")) {
             $token = $request->getHeader("nauth-sso")[0];
             
@@ -81,9 +88,8 @@ class Authentication
                 throw new JsonException(json_encode($error), 401);
             }
         }
-         
-        $response = $next($request, $response);
-        return $response;
+
+        return $next($request, $response);
     }
 
     /**
