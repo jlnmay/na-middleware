@@ -7,14 +7,19 @@ use \Psr\Http\Message\ResponseInterface as Response;
 use JlnMay\PersistentStorage\PsMemcached;
 use JlnMay\NAuth\NAuth;
 use Api\handlers\JsonException;
+use Api\v2\services\LogService;
 
 class Authentication
 {
     private $oauth2Server; 
+    private $logService; 
+    private $request; 
+    private $response; 
 
-    public function __construct($oauth2Server)
+    public function __construct($oauth2Server, LogService $logService)
     {
         $this->oauth2Server = $oauth2Server; 
+        $this->logService = $logService;    
     }
 
     /**
@@ -28,6 +33,9 @@ class Authentication
      */
     public function __invoke(Request $request, Response $response, $next)
     {
+        $this->request = $request;
+        $this->response = $response;
+
         // If allowInternalReadOperations attribute is present, that means that the incoming ips were validated, if the attribute 
         //  is set to true, we don't need to authenticate the incoming request at all 
         // This attribute is set in RestrictRoute middleware 
@@ -55,6 +63,7 @@ class Authentication
                 if (gettype($expirationDate) === "string" && $currentDate > $expirationDate) {
                     // Invalid token
                     $error = $this->buildErrorObject(401, "Authentication failed, due to missing or invalid credentials.");
+                    $this->logService->log($request, $response, json_encode($error), 401);
                     throw new JsonException(json_encode($error), 401);
                 }
 
@@ -81,10 +90,12 @@ class Authentication
             if ($request->hasHeader("Authorization") || $authorization) {
                 if (!$this->oauth2Server->verifyResourceRequest(\OAuth2\Request::createFromGlobals())) {
                     $error = $this->buildErrorObject(401, "Authentication failed, due to missing or invalid credentials.");
+                    $this->logService->log($request, $response, json_encode($error), 401);
                     throw new JsonException(json_encode($error), 401);
                 } 
             } else {
                 $error = $this->buildErrorObject(401, "Authentication failed, due to missing or invalid credentials.");
+                $this->logService->log($request, $response, json_encode($error), 401);
                 throw new JsonException(json_encode($error), 401);
             }
         }
@@ -128,6 +139,7 @@ class Authentication
         if ($position === false) {
             // There is no grant for the token
             $error = $this->buildErrorObject(403, "Authorized requestor does not have required grant for this operation.");
+            $this->logService->log($this->request, $this->response, json_encode($error), 403);
             throw new JsonException(json_encode($error), 403);
         }
     }
@@ -206,11 +218,13 @@ class Authentication
             } else {
                 // Invalid token 
                 $error = $this->buildErrorObject(401, "Authentication failed, due to missing or invalid credentials.");
+                $this->logService->log($this->request, $this->response, json_encode($error), 401);
                 throw new JsonException(json_encode($error), 401);   
             }
         } else {
             // The token was unable to be validated (No presence of the active attribute in NAuth response)
             $error = $this->buildErrorObject(401, "Authentication failed, due to missing or invalid credentials.");
+            $this->logService->log($this->request, $this->response, json_encode($error), 401);
             throw new JsonException(json_encode($error), 401);   
         }
     }
